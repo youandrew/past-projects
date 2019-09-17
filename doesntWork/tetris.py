@@ -1,6 +1,6 @@
 import pygame # learn more: https://python.org/pypi/Pygame
 import random
-import math
+import math  #if you rotate a block it can clip into other blocks whoops
 import time
 from itertools import cycle
 pygame.init()
