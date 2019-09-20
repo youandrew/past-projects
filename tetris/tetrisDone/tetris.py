@@ -12,6 +12,8 @@ musicChoice = "Regular.mp3"
 lines = 0
 grid = []
 gridcolor = []
+temparrayx = [0,0,0]
+temparrayy = [0,0,0]
 screen = pygame.display.set_mode((pixels * 10 + 100, pixels * 20))
 blockI = [
     [[0,0,0,0],
@@ -154,7 +156,8 @@ class TetrisBlock:
         self.CheckIt()
         self.origin.x = 5 # set in middle
         self.origin.y = 1
-        
+        self.oldx = 0
+        self.oldy = 0
         self.SetDifference()
     def Render(self):
         screen.blit(self.origin.surface, (self.origin.x * pixels, self.origin.y * pixels))
@@ -166,16 +169,10 @@ class TetrisBlock:
             self.blocks[count].diffy = self.origin.y - self.blocks[count].y
     def RotationCheck(self):
         canmove = True
-        for count in range(len(self.blocks)): # set difference
-            try:    
-                if(grid[self.blocks[count].y][self.blocks[count].x] != 0):
-                    canmove = False
-            except IndexError:
-                pass
+        
         if(canmove):
             for count in range(len(self.blocks)):
-                self.blocks[count].oldDiffx = self.blocks[count].diffx
-                self.blocks[count].oldDiffy = self.blocks[count].diffy
+                
                 self.blocks[count].diffx = self.origin.x - self.blocks[count].x
                 self.blocks[count].diffy = self.origin.y - self.blocks[count].y
             return True
@@ -235,20 +232,36 @@ class TetrisBlock:
         needToMove = False
         needToMoveLeft = False
         canmove = True
+        flipit = True
         for count in range(len(self.blocks)): # set difference
-            if(grid[self.origin.y + self.blocks[count].diffy][self.origin.x + self.blocks[count].diffx] != 0):
-                canmove = False
-                
+            try:
+                if(grid[self.origin.y + self.blocks[count].diffy][self.origin.x + self.blocks[count].diffx] != 0):
+                    canmove = False
+                    flipit = False
+            except IndexError:
+                pass
+        if(flipit == False):
                 if(self.counter == len(self.matrix) - 1):
                     self.counter = 0
                     self.rotation = self.matrix[self.counter]
                 if(self.counter == 0):
                     self.counter = len(self.matrix) - 1
                     self.rotation = self.matrix[self.counter]
+                
                 self.ReadRotation()
+                
+                for count in range(len(self.blocks)):
+                    
+                    self.blocks[count].x = temparrayx[count]
+                    self.blocks[count].y = temparrayy[count]
+                self.origin.x = self.oldx
+                self.origin.y = self.oldy    
+                
             
         if(canmove):
             for count in range(len(self.blocks)): # set difference
+                
+                
                 self.blocks[count].x = self.origin.x + self.blocks[count].diffx
                 self.blocks[count].y = self.origin.y + self.blocks[count].diffy
                 if self.blocks[count].x == 10:
@@ -265,7 +278,9 @@ class TetrisBlock:
                     self.blocks[count].x += 1
             return True
     def ReadRotation(self): # make sure to reset origin
+        
         self.blocks = []
+        
         
         for count in range(len(self.rotation)): # read rotation block
             for j in range(len(self.rotation[count])):
@@ -277,20 +292,31 @@ class TetrisBlock:
                     self.origin = block
     
     def RotateLeft(self):
+         for count in range(len(self.blocks)):
+                    
+                    temparrayx[count] = self.blocks[count].x
+                    temparrayy[count] = self.blocks[count].y
          self.counter += -1
+         
          if self.counter == -1:
              self.counter = len(self.matrix) - 1
          self.rotation = self.matrix[self.counter]    
          tempx = self.origin.x
          tempy = self.origin.y
+         self.oldy = self.origin.y
+         self.oldx = self.origin.x
          self.ReadRotation()
          asd = self.RotationCheck()
          
          self.origin.x = tempx
          self.origin.y = tempy
          self.SetDifference()
-               
+         
     def RotateRight(self):
+         for count in range(len(self.blocks)):
+                    
+                    temparrayx[count] = self.blocks[count].x
+                    temparrayy[count] = self.blocks[count].y
          self.counter += 1
          if self.counter == len(self.matrix):
              self.counter = 0
@@ -369,22 +395,26 @@ def CheckLines():
             
             for j  in range(len(grid[counter])):
               if grid[counter][j] == 1:
-                  if counter + 1 != 20:      
+                  print(j)
+                  if counter + 1 < 20:      
                     grid[counter][j] = 0
                     grav = True
                     nasd = 1
                     
                     while grav:
-                        if counter + nasd <= 20:
+                        if counter + nasd <= 19:
                             if grid[counter + nasd][j] == 0:
-                                nasd += 1
+                                nasd += 1            
+                                
                             else:
+                                gridcolor[counter + nasd - 1][j] = gridcolor[counter][j]
+                                gridcolor[counter][j] = 0
+
                                 grav = False
                         else:
                             grav = False
                         
-                    gridcolor[counter + nasd][j] = gridcolor[counter][j]
-                    gridcolor[counter][j] = 0
+                    
  
         asd = 0
 def main():
